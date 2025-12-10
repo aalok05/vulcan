@@ -5,11 +5,10 @@ class Cart:
         self.items = {}
         self.discounts = []
         self.total = Decimal('0.00')
+        self.applied_coupons = set()
 
     def add_item(self, item_id, price, quantity):
         qty = int(quantity)
-        if qty <= 0:
-            return
         
         if item_id in self.items:
             self.items[item_id]['qty'] += qty
@@ -19,6 +18,11 @@ class Cart:
         self.calculate_total()
 
     def apply_coupon(self, coupon_code):
+        if coupon_code in self.applied_coupons:
+            return
+
+        self.applied_coupons.add(coupon_code)
+
         if coupon_code == "SAVE10":
             self.discounts.append(Decimal('10.00'))
         elif coupon_code == "PERCENT20":
