@@ -19,11 +19,20 @@ def get_user_profile(user_id):
     if not current_user:
         return jsonify({"error": "Unauthorized"}), 401
 
+    if current_user["id"] != user_id:
+        return jsonify({"error": "Forbidden"}), 403
+
     user = users_db.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    return jsonify(user)
+    sanitized_user = {
+        "id": user["id"],
+        "username": user["username"],
+        "email": user["email"]
+    }
+
+    return jsonify(sanitized_user)
 
 @app.route('/api/documents/<doc_id>', methods=['GET'])
 def get_document(doc_id):
