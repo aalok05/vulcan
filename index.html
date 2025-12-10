@@ -98,14 +98,14 @@
                 <div class="meta">Agentic Security Scan Results</div>
             </div>
             <div class="meta">
-                Generated: 2025-12-10 07:16:05
+                Generated: 2025-12-10 07:17:49
             </div>
         </header>
 
         <section class="stat-grid">
             <div class="card stat-card">
                 <h3>Total Issues</h3>
-                <p style="color: var(--text-primary)">2</p>
+                <p style="color: var(--text-primary)">1</p>
             </div>
             <div class="card stat-card">
                 <h3>High Severity</h3>
@@ -113,13 +113,13 @@
             </div>
             <div class="card stat-card">
                 <h3>Fixed</h3>
-                <p style="color: var(--success)">2</p>
+                <p style="color: var(--success)">1</p>
             </div>
         </section>
 
         <section class="card">
             <h2>🔎 Executive Summary</h2>
-            <p class="summary-text">The new test scenario reveals business‑logic weaknesses in the discount and coupon system. The implementation allows unlimited stacking of fixed‑value discounts and contains flawed ordering in percentage‑based discount calculation. These issues could enable malicious users to manipulate cart totals and obtain unauthorized discounts.</p>
+            <p class="summary-text">The new test scenario exposes a business-logic flaw in the discount calculation logic. Percentage-based discounts are applied and then overwritten when `calculate_total()` runs, allowing inconsistent or unintended discount stacking behavior. While not a traditional injection flaw, this constitutes a business-logic vulnerability that could be exploited to manipulate prices.</p>
         </section>
 
         <section>
@@ -136,28 +136,10 @@
                 <div style="margin-bottom: 0.5rem;">
                     <strong>File:</strong> <code>tests/scenarios/logic_flaw_discount.py:22</code>
                 </div>
-                <p>Fixed-value discounts are appended to the `discounts` list without any limit or validation, allowing repeated application of the same coupon (e.g., SAVE10) to drive the total cost toward zero. This creates a discount‑abuse vulnerability.</p>
+                <p>The `apply_coupon` method directly modifies `self.total` for the `PERCENT20` coupon, but then immediately calls `calculate_total()`, which overwrites the discount effect. This creates inconsistent pricing behavior and opens the possibility for coupon misuse or discount bypassing.</p>
                 <div style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
                     <strong>Suggested Fix:</strong>
-                    <p style="color: var(--text-secondary);">Implement validation to ensure coupons can only be used once and verify coupon eligibility before applying the discount.</p>
-                </div>
-            </div>
-                
-            <div class="card">
-                <div class="vuln-header">
-                    <span class="vuln-title">Business Logic Vulnerability</span>
-                    <div>
-                        <span class="badge badge-MEDIUM">MEDIUM</span>
-                        <span class="badge badge-FIXED">FIXED</span>
-                    </div>
-                </div>
-                <div style="margin-bottom: 0.5rem;">
-                    <strong>File:</strong> <code>tests/scenarios/logic_flaw_discount.py:24</code>
-                </div>
-                <p>The percentage discount (`PERCENT20`) modifies `self.total` before calling `calculate_total()`, but calculate_total recomputes subtotal and overrides the percentage adjustment. This inconsistent ordering can result in unexpected or bypassable discount behavior.</p>
-                <div style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-                    <strong>Suggested Fix:</strong>
-                    <p style="color: var(--text-secondary);">Refactor coupon application to ensure percentage and fixed discounts are applied consistently within `calculate_total()`, and avoid modifying `self.total` prior to recalculation.</p>
+                    <p style="color: var(--text-secondary);">Centralize all discount logic inside `calculate_total()` and store percentage-based discounts in a structured format instead of modifying `self.total` directly. Ensure that discounts are applied deterministically and consistently.</p>
                 </div>
             </div>
                 
