@@ -89,7 +89,7 @@ class HTMLReporter:
             .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); }
         """
 
-    def generate_report(self, scan_results, fixed_files):
+    def generate_report(self, scan_results, fixed_files, history=None):
         vulnerabilities = scan_results.get("vulnerabilities", [])
         summary = scan_results.get("summary", "No summary provided.")
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -99,6 +99,23 @@ class HTMLReporter:
         high_sev = sum(1 for v in vulnerabilities if v.get('severity') == 'HIGH')
         med_sev = sum(1 for v in vulnerabilities if v.get('severity') == 'MEDIUM')
         fixed_count = len(fixed_files)
+        
+        # History Table Logic
+        history_rows = ""
+        if history:
+            # Sort by newest first
+            sorted_history = sorted(history, key=lambda x: x.get('timestamp', ''), reverse=True)
+            for record in sorted_history:
+                history_rows += f"""
+                <tr>
+                    <td>{record.get('timestamp', 'N/A')}</td>
+                    <td>PR #{record.get('pr_number', '?')}</td>
+                    <td>{record.get('total_vulns', 0)}</td>
+                    <td style="color: var(--success)">{record.get('fixed_count', 0)}</td>
+                </tr>
+                """
+        else:
+             history_rows = '<tr><td colspan="4" style="text-align:center; color: var(--text-secondary);">No history available yet.</td></tr>'
 
         html_content = f"""
 <!DOCTYPE html>
@@ -107,7 +124,24 @@ class HTMLReporter:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vulcan Security Report</title>
-    <style>{self.css}</style>
+    <style>
+        {self.css}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }}
+        th, td {{
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }}
+        th {{
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }}
+    </style>
 </head>
 <body>
     <div class="container">
@@ -134,6 +168,23 @@ class HTMLReporter:
                 <h3>Fixed</h3>
                 <p style="color: var(--success)">{fixed_count}</p>
             </div>
+        </section>
+
+        <section class="card">
+            <h2>📜 Scan History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Scan Source</th>
+                        <th>Issues</th>
+                        <th>Fixed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {history_rows}
+                </tbody>
+            </table>
         </section>
 
         <section class="card">

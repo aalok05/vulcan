@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vulcan Security Report</title>
     <style>
+        
             :root {
                 --bg-primary: #0f172a;
                 --bg-secondary: #1e293b;
@@ -88,7 +89,23 @@
             .summary-text { font-size: 1.1rem; color: var(--text-secondary); }
             
             .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); }
-        </style>
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -98,7 +115,7 @@
                 <div class="meta">Agentic Security Scan Results</div>
             </div>
             <div class="meta">
-                Generated: 2025-12-10 11:16:09
+                Generated: 2025-12-10 12:42:20
             </div>
         </header>
 
@@ -118,8 +135,25 @@
         </section>
 
         <section class="card">
+            <h2>📜 Scan History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Scan Source</th>
+                        <th>Issues</th>
+                        <th>Fixed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" style="text-align:center; color: var(--text-secondary);">No history available yet.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="card">
             <h2>🔎 Executive Summary</h2>
-            <p class="summary-text">The changes introduce significant security risks, including direct string‑concatenated SQL queries and the use of a hardcoded password. These patterns create opportunities for exploitation and weaken authentication security. No SAST findings were reported, but manual review reveals high‑severity issues.</p>
+            <p class="summary-text">The PR introduces two high‑risk security issues: direct string‑concatenated SQL queries and a hardcoded password check. These vulnerabilities can lead to SQL injection and compromised authentication security. SAST results did not detect these issues, but they are present in the new changes.</p>
         </section>
 
         <section>
@@ -134,12 +168,12 @@
                     </div>
                 </div>
                 <div style="margin-bottom: 0.5rem;">
-                    <strong>File:</strong> <code>unknown:6</code>
+                    <strong>File:</strong> <code>unknown:7</code>
                 </div>
-                <p>User input is concatenated directly into an SQL query, allowing an attacker to manipulate the query and potentially access or modify database contents.</p>
+                <p>The SQL query is constructed using direct string concatenation with user input, allowing an attacker to manipulate the query and access or modify database data.</p>
                 <div style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
                     <strong>Suggested Fix:</strong>
-                    <p style="color: var(--text-secondary);">Use parameterized SQL queries, e.g., cursor.execute(&#x27;SELECT * FROM users WHERE username = ?&#x27;, (username,)).</p>
+                    <p style="color: var(--text-secondary);">Use parameterized queries, e.g., cursor.execute(&#x27;SELECT * FROM users WHERE username = ?&#x27;, (username,)).</p>
                 </div>
             </div>
                 
@@ -152,12 +186,12 @@
                     </div>
                 </div>
                 <div style="margin-bottom: 0.5rem;">
-                    <strong>File:</strong> <code>unknown:12</code>
+                    <strong>File:</strong> <code>unknown:13</code>
                 </div>
-                <p>A hardcoded password is used for authentication, allowing anyone with knowledge of the string to bypass security controls.</p>
+                <p>The authentication logic contains a hardcoded password, which can be easily extracted and bypasses proper authentication controls.</p>
                 <div style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
                     <strong>Suggested Fix:</strong>
-                    <p style="color: var(--text-secondary);">Remove hardcoded credentials and validate passwords using a secure authentication mechanism with hashed and stored credentials.</p>
+                    <p style="color: var(--text-secondary);">Replace the hardcoded password with a secure authentication mechanism such as hashed passwords stored in a database.</p>
                 </div>
             </div>
                 

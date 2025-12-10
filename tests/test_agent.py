@@ -37,7 +37,8 @@ def test_agent():
     diff = f"+ {content}" 
     files = {'tests/vulnerable_code.py': content}
     
-    vulnerabilities = scanner.scan(diff, files)
+    scan_results = scanner.scan(diff, files)
+    vulnerabilities = scan_results.get("vulnerabilities", [])
     print(f"Found {len(vulnerabilities)} vulnerabilities.")
 
     # 3. Patch

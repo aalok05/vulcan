@@ -1,6 +1,9 @@
+```python
 import os
 import sys
 import requests
+import json
+import datetime
 from dotenv import load_dotenv
 from github import Github, InputGitAuthor
 from scanner import Scanner
@@ -125,19 +128,41 @@ def main():
     print("Posted summary comment to PR.")
     
     # 6. Generate HTML Report
+    # Load history if exists (populated by workflow step)
+    history = []
+    if os.path.exists("history.json"):
+        try:
+            with open("history.json", "r") as f:
+                history = json.load(f)
+        except Exception as e:
+            print(f"Warning: Could not load history.json: {e}")
+
+    # Add current run to history
+    new_record = {
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "pr_number": pr.number,
+        "total_vulns": len(scan_results.get("vulnerabilities", [])),
+        "fixed_count": len(fixed_files)
+    }
+    history.append(new_record)
+    
     reporter = HTMLReporter()
-    report_html = reporter.generate_report(scan_results, fixed_files)
+    report_html = reporter.generate_report(scan_results, fixed_files, history)
     
     try:
         os.makedirs("public", exist_ok=True)
         with open("public/index.html", "w", encoding='utf-8') as f:
             f.write(report_html)
         
+        # Save updated history for next run
+        with open("public/history.json", "w") as f:
+            json.dump(history, f, indent=2)
+
         # Create .nojekyll to disable Jekyll processing (fixes 404s)
         with open("public/.nojekyll", "w") as f:
             pass
             
-        print("Generated public/index.html and .nojekyll")
+        print("Generated public/index.html, history.json, and .nojekyll")
     except Exception as e:
         print(f"Failed to write HTML report: {e}")
 

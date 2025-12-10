@@ -16,6 +16,22 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Checkout gh-pages for history
+        uses: actions/checkout@v3
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages-branch
+
+      - name: Restore history
+        run: |
+          if [ -f gh-pages-branch/history.json ]; then
+            cp gh-pages-branch/history.json history.json
+            echo "Restored history.json"
+          else
+            echo "No history found (first run?)"
+          fi
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
