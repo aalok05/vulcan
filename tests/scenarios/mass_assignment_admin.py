@@ -17,18 +17,16 @@ users = {
     "alice": User("alice", "alice@example.com")
 }
 
-ALLOWED_UPDATE_FIELDS = {"email", "is_active"}
-ALLOWED_CREATE_FIELDS = {"username", "email"}
-
 @app.route('/api/users/<username>/update', methods=['POST'])
 def update_user(username):
     user = users.get(username)
     if not user:
         return jsonify({"error": "User not found"}), 404
     
-    data = request.json or {}
+    data = request.json
+    
     for key, value in data.items():
-        if key in ALLOWED_UPDATE_FIELDS:
+        if hasattr(user, key):
             setattr(user, key, value)
     
     user.save()
@@ -36,10 +34,12 @@ def update_user(username):
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
-    data = request.json or {}
-    safe_data = {k: v for k, v in data.items() if k in ALLOWED_CREATE_FIELDS}
-    
-    new_user = User(**safe_data)
+    data = request.json
+
+    username = data.get("username")
+    email = data.get("email")
+    new_user = User(username=username, email=email)
+
     users[new_user.username] = new_user
     new_user.save()
     
