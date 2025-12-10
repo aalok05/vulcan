@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from github import Github, InputGitAuthor
 from scanner import Scanner
 from patcher import Patcher
+from reporter import HTMLReporter
 
 def main():
     print("Starting Agentic Security Scanner...")
@@ -119,12 +120,21 @@ def main():
             # If we want to list vulns even if no fix, we'd need to change loop logic.
             # But adhering to existing pattern + summary:
             pass 
-    else:
-        body += "✅ No high-severity vulnerabilities found."
-
     # Always post comment if there's a summary or vulnerabilities
     pr.create_issue_comment(body)
     print("Posted summary comment to PR.")
+    
+    # 6. Generate HTML Report
+    reporter = HTMLReporter()
+    report_html = reporter.generate_report(scan_results, fixed_files)
+    
+    try:
+        os.makedirs("public", exist_ok=True)
+        with open("public/index.html", "w", encoding='utf-8') as f:
+            f.write(report_html)
+        print("Generated public/index.html")
+    except Exception as e:
+        print(f"Failed to write HTML report: {e}")
 
     print("Scan complete.")
 

@@ -41,6 +41,7 @@ def test_agent():
     print(f"Found {len(vulnerabilities)} vulnerabilities.")
 
     # 3. Patch
+    fixed_files = [] # For report
     if vulnerabilities:
         print("\n--- Patching ---")
         patcher = Patcher(azure_key, azure_endpoint, azure_deployment, azure_api_version)
@@ -49,6 +50,19 @@ def test_agent():
             new_content = patcher.generate_fix(vuln, content)
             print("Generated Fix:")
             print(new_content)
+            fixed_files.append("tests/vulnerable_code.py")
+            
+    # 4. Report
+    from src.reporter import HTMLReporter
+    reporter = HTMLReporter()
+    report_html = reporter.generate_report(scan_results, fixed_files)
+    
+    os.makedirs("public", exist_ok=True)
+    with open("public/test_report.html", "w", encoding='utf-8') as f:
+        f.write(report_html)
+    print("\nGenerated public/test_report.html")
 
 if __name__ == "__main__":
+    if sys.platform == "win32":
+        sys.stdout.reconfigure(encoding='utf-8')
     test_agent()
