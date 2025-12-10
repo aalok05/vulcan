@@ -24,10 +24,9 @@ def update_user(username):
         return jsonify({"error": "User not found"}), 404
     
     data = request.json
-    allowed = ["email"]
-
+    
     for key, value in data.items():
-        if key in allowed:
+        if hasattr(user, key):
             setattr(user, key, value)
     
     user.save()
