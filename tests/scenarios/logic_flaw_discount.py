@@ -27,14 +27,11 @@ class Cart:
 
     def calculate_total(self):
         subtotal = sum(item['price'] * item['qty'] for item in self.items.values())
+        flat_discount = sum(self.discounts)
+        percent_total = sum(self.percent_discounts)
 
-        percent_total = subtotal
-        for pct in self.percent_discounts:
-            percent_total = percent_total * (Decimal('1.00') - pct)
-
-        discount_sum = sum(self.discounts)
-
-        self.total = percent_total - discount_sum
+        subtotal_after_percent = subtotal * (Decimal('1.00') - percent_total)
+        self.total = subtotal_after_percent - flat_discount
 
         if self.total < Decimal('0.00'):
             self.total = Decimal('0.00')
