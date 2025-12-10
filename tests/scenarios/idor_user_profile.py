@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
 from textwrap import dedent
+import os
 
 app = Flask(__name__)
 
-# Mock database
 users_db = {
     1: {"id": 1, "username": "admin", "email": "admin@example.com", "private_notes": "Server keys: XYZ"},
     2: {"id": 2, "username": "alice", "email": "alice@example.com", "private_notes": "My diary..."},
@@ -18,26 +18,21 @@ def get_user_profile(user_id):
     current_user = get_current_user()
     if not current_user:
         return jsonify({"error": "Unauthorized"}), 401
-    
+
     user = users_db.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    public_user = {
-        "id": user["id"],
-        "username": user["username"],
-        "email": user["email"]
-    }
-        
-    return jsonify(public_user)
+    return jsonify(user)
 
 @app.route('/api/documents/<doc_id>', methods=['GET'])
 def get_document(doc_id):
-    import os
-    file_path = f"./documents/{doc_id}"
-    
+    base_dir = os.path.abspath("./documents")
+    target_path = os.path.abspath(os.path.join(base_dir, doc_id))
+    if not target_path.startswith(base_dir + os.sep):
+        return "Invalid document ID", 400
     try:
-        with open(file_path, 'r') as f:
+        with open(target_path, 'r') as f:
             return f.read()
     except FileNotFoundError:
         return "File not found", 404
