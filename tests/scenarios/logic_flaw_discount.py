@@ -4,6 +4,7 @@ class Cart:
     def __init__(self):
         self.items = {}
         self.discounts = []
+        self.used_coupons = set()
         self.total = Decimal('0.00')
 
     def add_item(self, item_id, price, quantity):
@@ -17,10 +18,15 @@ class Cart:
         self.calculate_total()
 
     def apply_coupon(self, coupon_code):
+        if coupon_code in self.used_coupons:
+            return
+
         if coupon_code == "SAVE10":
             self.discounts.append(Decimal('10.00'))
+            self.used_coupons.add(coupon_code)
         elif coupon_code == "PERCENT20":
-            self.total = self.total * Decimal('0.8') 
+            self.total = self.total * Decimal('0.8')
+            self.used_coupons.add(coupon_code)
         
         self.calculate_total()
 
