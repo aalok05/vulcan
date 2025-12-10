@@ -132,7 +132,12 @@ def main():
         os.makedirs("public", exist_ok=True)
         with open("public/index.html", "w", encoding='utf-8') as f:
             f.write(report_html)
-        print("Generated public/index.html")
+        
+        # Create .nojekyll to disable Jekyll processing (fixes 404s)
+        with open("public/.nojekyll", "w") as f:
+            pass
+            
+        print("Generated public/index.html and .nojekyll")
     except Exception as e:
         print(f"Failed to write HTML report: {e}")
 
