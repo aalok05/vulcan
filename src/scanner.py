@@ -80,22 +80,22 @@ class Scanner:
         4. Provide a JSON output with the following structure:
         
         ```json
-        {
+        {{
             "summary": "A short, high-level code review summary of the changes (2-3 sentences). Focus on security code quality.",
             "vulnerabilities": [
-                {
+                {{
                     "file": "path/to/file",
                     "line": <line_number>,
                     "severity": "HIGH" | "MEDIUM",
                     "type": "Vulnerability Type",
                     "description": "Detailed description of the issue.",
                     "suggested_fix": "Description of how to fix it."
-                }
+                }}
             ]
-        }
+        }}
         ```
         
-        If no vulnerabilities are found, return `{"summary": "...", "vulnerabilities": []}`.
+        If no vulnerabilities are found, return `{{"summary": "...", "vulnerabilities": []}}`.
         Output ONLY valid JSON.
         """
         
