@@ -2,7 +2,7 @@ import os
 import sys
 import requests
 from dotenv import load_dotenv
-from github import Github
+from github import Github, InputGitAuthor
 from scanner import Scanner
 from patcher import Patcher
 
@@ -40,7 +40,8 @@ def main():
 
     # 2. Fetch Data
     print("Fetching PR diff and files...")
-    diff_content = requests.get(pr.diff_url).text
+    headers = {"Authorization": f"token {github_token}"}
+    diff_content = requests.get(pr.diff_url, headers=headers).text
     
     # Get content of changed files
     files_content = {}
@@ -84,12 +85,18 @@ def main():
             try:
                 # Get current file sha for update
                 contents = repo.get_contents(file_path, ref=pr.head.ref)
+                
+                # Define Bot Identity
+                bot_author = InputGitAuthor(name="Vulcan Security Bot", email="bot@vulcan.security")
+                
                 repo.update_file(
                     path=file_path,
                     message=f"Security Fix: {vuln['type']}",
                     content=new_content,
                     sha=contents.sha,
-                    branch=pr.head.ref
+                    branch=pr.head.ref,
+                    author=bot_author,
+                    committer=bot_author
                 )
                 fixed_files.append(file_path)
                 comments.append(f"- **Fixed** {vuln['type']} in `{file_path}`: {vuln['description']}")
