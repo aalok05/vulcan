@@ -10,14 +10,15 @@ class User:
     role: str = "user"
     is_active: bool = True
     
-    # In a real app, this would be DB model
     def save(self):
         print(f"Saving user {self.username} with role {self.role}")
 
-# Mock DB
 users = {
     "alice": User("alice", "alice@example.com")
 }
+
+ALLOWED_UPDATE_FIELDS = {"email", "is_active"}
+ALLOWED_CREATE_FIELDS = {"username", "email"}
 
 @app.route('/api/users/<username>/update', methods=['POST'])
 def update_user(username):
@@ -25,16 +26,9 @@ def update_user(username):
     if not user:
         return jsonify({"error": "User not found"}), 404
     
-    data = request.json
-    
-    # Vulnerability: Mass Assignment
-    # The code iterates over ALL keys in the JSON payload and sets them on the user object.
-    # An attacker can send {"role": "admin"} or {"is_superuser": true} even if they shouldn't be able to.
-    
+    data = request.json or {}
     for key, value in data.items():
-        # Missing check: if key in ['role', 'is_admin'] and not current_user.is_admin: ...
-        
-        if hasattr(user, key):
+        if key in ALLOWED_UPDATE_FIELDS:
             setattr(user, key, value)
     
     user.save()
@@ -42,13 +36,10 @@ def update_user(username):
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
-    data = request.json
+    data = request.json or {}
+    safe_data = {k: v for k, v in data.items() if k in ALLOWED_CREATE_FIELDS}
     
-    # Vulnerability: Mass Assignment in creation
-    # Attacker sends {"username": "hacker", "password": "...", "role": "admin"}
-    # The generic constructor or object mapper blindly accepts it.
-    
-    new_user = User(**data)
+    new_user = User(**safe_data)
     users[new_user.username] = new_user
     new_user.save()
     
